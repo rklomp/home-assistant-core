@@ -114,6 +114,7 @@ FLOWS = [
     "icloud",
     "ifttt",
     "insteon",
+    "intesishome_local",
     "ios",
     "ipma",
     "ipp",

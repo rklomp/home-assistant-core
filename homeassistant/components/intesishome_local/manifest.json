@@ -1,0 +1,13 @@
+{
+  "domain": "intesishome_local",
+  "name": "IntesisHome Local",
+  "config_flow": true,
+  "documentation": "https://www.home-assistant.io/integrations/intesishome_local",
+  "requirements": ["pyintesishome-local==0.1.0"],
+  "ssdp": [],
+  "zeroconf": [],
+  "homekit": {},
+  "after_dependencies": ["intesishome"],
+  "codeowners": ["@rklomp"],
+  "iot_class": "local_polling"
+}
