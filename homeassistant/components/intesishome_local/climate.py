@@ -1,5 +1,4 @@
 """The IntesisHome Local climate entity."""
-from datetime import timedelta
 import logging
 from typing import Callable, Coroutine
 
@@ -12,8 +11,6 @@ from homeassistant.core import HomeAssistant
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
-
-SCAN_INTERVAL = timedelta(seconds=5)
 
 
 async def async_setup_entry(
@@ -42,25 +39,6 @@ class IntesisLocalAC(IntesisAC):
         ih_device: dict = {"name": device_info["ownSSID"]}
 
         super().__init__(unique_id, ih_device, controller)
-
-    async def async_added_to_hass(self):
-        """Override async_added_to_hass."""
-        await self._controller.get_values()
-        _LOGGER.debug("Added climate device with state: %s", repr(self._ih_device))
-
-    async def async_will_remove_from_hass(self):
-        """Shutdown the controller when the device is being removed."""
-        pass
-
-    @property
-    def should_poll(self):
-        """Intesis Local is poll based."""
-        return True
-
-    async def async_update(self):
-        """Update device values."""
-        await super().async_update()
-        await self._controller.get_values()
 
     @property
     def device_info(self) -> dict:
