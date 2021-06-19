@@ -2,7 +2,17 @@
 import logging
 from random import randrange
 
-from pyintesishome import IHAuthenticationError, IHConnectionError, IntesisHome
+from pyintesishome import (
+    IHAuthenticationError,
+    IHConnectionError,
+    IntesisHome,
+    IntesisHomeLocal,
+)
+from pyintesishome.const import (
+    DEVICE_AIRCONWITHME,
+    DEVICE_INTESISHOME,
+    DEVICE_INTESISHOME_LOCAL,
+)
 import voluptuous as vol
 
 from homeassistant.components.climate import PLATFORM_SCHEMA, ClimateEntity
@@ -29,6 +39,7 @@ from homeassistant.components.climate.const import (
 from homeassistant.const import (
     ATTR_TEMPERATURE,
     CONF_DEVICE,
+    CONF_HOST,
     CONF_PASSWORD,
     CONF_USERNAME,
     TEMP_CELSIUS,
@@ -40,16 +51,14 @@ from homeassistant.helpers.event import async_call_later
 
 _LOGGER = logging.getLogger(__name__)
 
-IH_DEVICE_INTESISHOME = "IntesisHome"
-IH_DEVICE_AIRCONWITHME = "airconwithme"
-
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Required(CONF_USERNAME): cv.string,
         vol.Required(CONF_PASSWORD): cv.string,
-        vol.Optional(CONF_DEVICE, default=IH_DEVICE_INTESISHOME): vol.In(
-            [IH_DEVICE_AIRCONWITHME, IH_DEVICE_INTESISHOME]
+        vol.Optional(CONF_DEVICE, default=DEVICE_INTESISHOME): vol.In(
+            [DEVICE_AIRCONWITHME, DEVICE_INTESISHOME, DEVICE_INTESISHOME_LOCAL]
         ),
+        vol.Optional(CONF_HOST): cv.string,
     }
 )
 
@@ -91,17 +100,29 @@ MAP_STATE_ICONS = {
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Create the IntesisHome climate devices."""
+    ih_host = config.get(CONF_HOST, None)
     ih_user = config[CONF_USERNAME]
     ih_pass = config[CONF_PASSWORD]
     device_type = config[CONF_DEVICE]
+    websession = async_get_clientsession(hass)
 
-    controller = IntesisHome(
-        ih_user,
-        ih_pass,
-        hass.loop,
-        websession=async_get_clientsession(hass),
-        device_type=device_type,
-    )
+    if device_type == DEVICE_INTESISHOME_LOCAL:
+        controller = IntesisHomeLocal(
+            ih_host,
+            ih_user,
+            ih_pass,
+            hass.loop,
+            websession=websession,
+            device_type=device_type,
+        )
+    else:
+        controller = IntesisHome(
+            ih_user,
+            ih_pass,
+            hass.loop,
+            websession=websession,
+            device_type=device_type,
+        )
     try:
         await controller.poll_status()
     except IHAuthenticationError:
