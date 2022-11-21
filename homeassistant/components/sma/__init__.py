@@ -78,10 +78,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         """Update the used SMA sensors."""
         try:
             await sma.read(sensor_def)
-        except (
-            pysma.exceptions.SmaReadException,
-            pysma.exceptions.SmaConnectionException,
-        ) as exc:
+        except pysma.exceptions.SmaException as exc:
             raise UpdateFailed(exc) from exc
 
     interval = timedelta(
